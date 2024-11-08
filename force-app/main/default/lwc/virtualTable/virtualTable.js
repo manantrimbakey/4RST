@@ -5,7 +5,7 @@ export default class VirtualTable extends LightningElement {
     allData = [];
     
     // Configuration
-    rowHeight = 40;
+    rowHeight = 48;
     nodePadding = 5; // Buffer size in rows
     viewportHeight = 400; // Default height
     
@@ -14,7 +14,7 @@ export default class VirtualTable extends LightningElement {
 
     // Computed properties for virtual scrolling
     get totalContentHeight() {
-        return this.allData.length * this.rowHeight;
+        return this.allData.length * (this.rowHeight);
     }
     
     get startNode() {
@@ -44,7 +44,8 @@ export default class VirtualTable extends LightningElement {
     }
 
     connectedCallback() {
-        this.generateData(100000); // Generate sample data
+        // this.generateData(840000); // Generate sample data
+        this.generateData(500000); // Generate sample data
         this.updateVisibleData();
     }
 

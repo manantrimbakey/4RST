@@ -1,32 +1,43 @@
 <template>
   <div class="outer-container">
-    <table class="header-table">
+    <table class="header-table" role="table" aria-label="Contact List">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Phone</th>
         </tr>
       </thead>
     </table>
-    <div class="table-container" onscroll={handleScroll}>
+    <div
+      class="table-container"
+      onscroll={handleScroll}
+      role="region"
+      aria-label="Scrollable Contact List"
+      tabindex="0"
+    >
       <div style={contentStyle}>
         <div style={offsetStyle}>
-          <table>
+          <table role="table">
             <tbody>
               <template for:each={visibleData} for:item="item">
-                <tr key={item.id} style={rowHeightStyle}>
-                  <td>
+                <tr
+                  key={item.id}
+                  style={rowHeightStyle}
+                  role="row"
+                  aria-rowindex={item.index}
+                >
+                  <td role="cell">
                     <lightning-formatted-text
                       value={item.name}
                     ></lightning-formatted-text>
                   </td>
-                  <td>
+                  <td role="cell">
                     <lightning-formatted-email
                       value={item.email}
                     ></lightning-formatted-email>
                   </td>
-                  <td>
+                  <td role="cell">
                     <lightning-formatted-phone
                       value={item.phone}
                     ></lightning-formatted-phone>
