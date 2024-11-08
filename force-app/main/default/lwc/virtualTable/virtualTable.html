@@ -1,0 +1,42 @@
+<template>
+  <div class="outer-container">
+    <table class="header-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+        </tr>
+      </thead>
+    </table>
+    <div class="table-container" onscroll={handleScroll}>
+      <div style={contentStyle}>
+        <div style={offsetStyle}>
+          <table>
+            <tbody>
+              <template for:each={visibleData} for:item="item">
+                <tr key={item.id} style={rowHeightStyle}>
+                  <td>
+                    <lightning-formatted-text
+                      value={item.name}
+                    ></lightning-formatted-text>
+                  </td>
+                  <td>
+                    <lightning-formatted-email
+                      value={item.email}
+                    ></lightning-formatted-email>
+                  </td>
+                  <td>
+                    <lightning-formatted-phone
+                      value={item.phone}
+                    ></lightning-formatted-phone>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

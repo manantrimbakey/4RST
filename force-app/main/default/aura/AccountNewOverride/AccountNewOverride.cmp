@@ -1,0 +1,8 @@
+<aura:component
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction,lightning:actionOverride"
+    access="global"
+>
+    <div style="height: 70vh; overflow-y: auto;" class="slds-theme_default slds-m-horizontal_small slds-is-relative">
+        <c:recordPageOverride objectName="Account"></c:recordPageOverride>
+    </div>
+</aura:component>

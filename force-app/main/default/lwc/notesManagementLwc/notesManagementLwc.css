@@ -1,0 +1,9 @@
+.full_height_viewport {
+    height: 100%;
+}
+
+.task-log-button {
+    height: 75%;
+    width: 75%;
+    border-radius: 5rem !important;
+}

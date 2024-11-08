@@ -1,0 +1,31 @@
+.outer-container {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header-table {
+    width: 100%;
+    background: white;
+    z-index: 2;
+}
+
+.table-container {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    width: 33.33%;
+}

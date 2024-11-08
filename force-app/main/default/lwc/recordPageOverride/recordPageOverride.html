@@ -1,0 +1,27 @@
+<template>
+    <template lwc:if={isLoading}>
+    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+</template>
+    <div class="slds-p-around_medium">
+        <lightning-record-edit-form record-id={recordId} object-api-name={objectName} 
+        onsuccess={handleSuccess} onsubmit={validateFields} onerror={handleError}>
+        <div class="slds-grid slds-gutters slds-wrap">
+            <template for:each={fields} for:item="eachField">
+                <div class="slds-col slds-size_1-of-2" key={eachField.index}>
+                    <!-- <template lwc:if={eachField.isString}>
+                        <lightning-input
+                            type="text"
+                            variant="standard"
+                            name={eachField.fieldName}
+                            label={eachField.fieldName}
+                            placeholder="type here..."
+                        ></lightning-input>
+                    </template> -->
+                    <lightning-input-field field-name={eachField.fieldName} value="dfdsa">
+                    </lightning-input-field>
+                </div>
+            </template>
+        </div>
+        </lightning-record-edit-form>
+    </div>
+</template>
