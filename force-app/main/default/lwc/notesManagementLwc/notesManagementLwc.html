@@ -3,9 +3,7 @@
         <lightning-spinner alternative-text="Loading"></lightning-spinner>
     </template> -->
     <div class="full_height_viewport slds-box slds-theme_shade slds-is-relative">
-
-        <c-virtual-table></c-virtual-table>
-
+        <c-virtual-table lwc:if={rowData.length} row-data={rowData} columns={columns}></c-virtual-table>
 
         <!-- <div style="text-align: center; height: 100%">
             <h1 style="font-size: large;" class="slds-p-around_medium">Timer: {displayTime}</h1>

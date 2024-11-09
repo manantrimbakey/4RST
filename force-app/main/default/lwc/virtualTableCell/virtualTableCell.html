@@ -1,0 +1,78 @@
+<template>
+    <lightning-layout style={rowHeightStyle} vertical-align="center">
+        <lightning-layout-item>
+            <lightning-input
+                lwc:if={isBoolean}
+                checked={value}
+                type="checkbox"
+                disabled
+                variant="label-hidden"
+                label={formattedTypeAttributes.label}
+            ></lightning-input>
+
+            <lightning-formatted-number
+                lwc:elseif={isNumber}
+                value={value}
+                minimum-fraction-digits={numberFormatStyle.minimumFractionDigits}
+                maximum-fraction-digits={numberFormatStyle.maximumFractionDigits}
+                style={numberFormatStyle.style}
+                currency-code={numberFormatStyle.currencyCode}
+                currency-display-as={numberFormatStyle.currencyDisplayAs}
+            ></lightning-formatted-number>
+
+            <lightning-formatted-date-time
+                lwc:elseif={isDate}
+                value={value}
+                year={dateFormatAttributes.year}
+                month={dateFormatAttributes.month}
+                day={dateFormatAttributes.day}
+                weekday={dateFormatAttributes.weekday}
+                era={dateFormatAttributes.era}
+                time-zone={dateFormatAttributes.timeZone}
+                time-zone-name={dateFormatAttributes.timeZoneName}
+            ></lightning-formatted-date-time>
+
+            <lightning-formatted-date-time
+                lwc:elseif={isDateTime}
+                value={value}
+                year={dateTimeFormatAttributes.year}
+                month={dateTimeFormatAttributes.month}
+                day={dateTimeFormatAttributes.day}
+                hour={dateTimeFormatAttributes.hour}
+                minute={dateTimeFormatAttributes.minute}
+                second={dateTimeFormatAttributes.second}
+                time-zone={dateTimeFormatAttributes.timeZone}
+                time-zone-name={dateTimeFormatAttributes.timeZoneName}
+                hour-cycle={dateTimeFormatAttributes.hourCycle}
+            ></lightning-formatted-date-time>
+
+            <lightning-formatted-email
+                lwc:elseif={isEmail}
+                value={value}
+                hide-icon={formattedTypeAttributes.hideIcon}
+            ></lightning-formatted-email>
+
+            <lightning-formatted-phone lwc:elseif={isPhone} value={value}></lightning-formatted-phone>
+
+            <lightning-formatted-url
+                lwc:elseif={isUrl}
+                value={value}
+                target={urlTarget}
+                label={urlLabel}
+                tooltip={formattedTypeAttributes.tooltip}
+            ></lightning-formatted-url>
+
+            <lightning-formatted-location
+                lwc:elseif={isLocation}
+                latitude={value.latitude}
+                longitude={value.longitude}
+            ></lightning-formatted-location>
+
+            <lightning-formatted-text
+                lwc:else
+                value={value}
+                linkify={formattedTypeAttributes.linkify}
+            ></lightning-formatted-text>
+        </lightning-layout-item>
+    </lightning-layout>
+</template>

@@ -1,53 +1,45 @@
 <template>
-  <div class="outer-container">
-    <table class="header-table" role="table" aria-label="Contact List">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Email</th>
-          <th scope="col">Phone</th>
-        </tr>
-      </thead>
-    </table>
-    <div
-      class="table-container"
-      onscroll={handleScroll}
-      role="region"
-      aria-label="Scrollable Contact List"
-      tabindex="0"
-    >
-      <div style={contentStyle}>
-        <div style={offsetStyle}>
-          <table role="table">
-            <tbody>
-              <template for:each={visibleData} for:item="item">
-                <tr
-                  key={item.id}
-                  style={rowHeightStyle}
-                  role="row"
-                  aria-rowindex={item.index}
-                >
-                  <td role="cell">
-                    <lightning-formatted-text
-                      value={item.name}
-                    ></lightning-formatted-text>
-                  </td>
-                  <td role="cell">
-                    <lightning-formatted-email
-                      value={item.email}
-                    ></lightning-formatted-email>
-                  </td>
-                  <td role="cell">
-                    <lightning-formatted-phone
-                      value={item.phone}
-                    ></lightning-formatted-phone>
-                  </td>
+    <div class="outer-container">
+        <table class="header-table slds-table" role="table" aria-label="Dynamic Table">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <template for:each={processedColumns} for:item="column">
+                        <th key={column.key} scope="col" class={column.headerClass}>
+                            <div class="slds-truncate" title={column.label}>{column.label}</div>
+                        </th>
+                    </template>
                 </tr>
-              </template>
-            </tbody>
-          </table>
+            </thead>
+        </table>
+        <div class="table-container" onscroll={handleScroll} role="region" aria-label="Scrollable Table" tabindex="0">
+            <div style={contentStyle}>
+                <div style={offsetStyle}>
+                    <table role="table" class="slds-table">
+                        <tbody>
+                            <template for:each={visibleData} for:item="row">
+                                <tr
+                                    key={row.key}
+                                    style={rowHeightStyle}
+                                    role="row"
+                                    aria-rowindex={row.index}
+                                    class="slds-hint-parent"
+                                >
+                                    <template for:each={row.flattenedColumns} for:item="column">
+                                        <td key={column.key} role="cell" class={column.cellClass}>
+                                            <c-virtual-table-cell
+                                                type={column.type}
+                                                value={column.value}
+                                                type-attributes={column.typeAttributes}
+                                                row-height-style={rowHeightStyle}
+                                            ></c-virtual-table-cell>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </template>
