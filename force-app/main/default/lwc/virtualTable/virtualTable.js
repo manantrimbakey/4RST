@@ -2,9 +2,8 @@
 import { LightningElement, track, api } from 'lwc';
 
 export default class VirtualTable extends LightningElement {
-    @track visibleData = [];
-    @api
-    get columns() {
+    @api key;
+    @api get columns() {
         return this._columns || [];
     }
     set columns(value) {
@@ -20,6 +19,8 @@ export default class VirtualTable extends LightningElement {
         this.allData = value || [];
         this.updateVisibleData();
     }
+
+    @track visibleData = [];
 
     allData = [];
     _columns = [];
@@ -73,28 +74,8 @@ export default class VirtualTable extends LightningElement {
     }
 
     connectedCallback() {
-        // this.generateData(840000); // Generate sample data
-        // this.generateData(500000); // Generate sample data
         this.updateVisibleData();
     }
-
-    // generateData(count) {
-    //     for (let i = 0; i < count; i++) {
-    //         this.allData.push({
-    //             id: i,
-    //             name: `User ${i}`,
-    //             email: `user${i}@example.com`,
-    //             phone: `(555) ${String(i).padStart(3, '0')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
-    //         });
-    //     }
-
-    //     console.log(
-    //         `%callData %c=> %c${this.allData.length}`,
-    //         'color: #4287f5; font-weight: bold;',
-    //         'color: black;',
-    //         'color: #42f554; font-weight: bold;'
-    //     );
-    // }
 
     handleScroll(event) {
         // Cancel any pending animation frame
@@ -121,13 +102,27 @@ export default class VirtualTable extends LightningElement {
         const endNode = Math.min(this.startNode + this.visibleNodesCount, this.allData.length);
         this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => ({
             ...row,
-            key: row.id || index,
+            key: row[this.key] || row.id || index,
             index: this.startNode + index + 1,
-            flattenedColumns: this.processedColumns.map((column) => ({
-                ...column,
-                value: row[column.fieldName],
-                key: `${row.id || index}-${column.fieldName}` // Unique key for each cell
-            }))
+            flattenedColumns: this.processedColumns.map((column) => {
+                const typeAttributes = { ...column.typeAttributes };
+
+                // Handle dynamic field references in typeAttributes
+                if (typeAttributes) {
+                    Object.keys(typeAttributes).forEach((attr) => {
+                        if (typeAttributes[attr]?.fieldName) {
+                            typeAttributes[attr] = row[typeAttributes[attr].fieldName];
+                        }
+                    });
+                }
+
+                return {
+                    ...column,
+                    value: row[column.fieldName],
+                    typeAttributes: typeAttributes,
+                    key: `${row[this.key] || row.id || index}-${column.fieldName}` // Unique key for each cell
+                };
+            })
         }));
     }
 

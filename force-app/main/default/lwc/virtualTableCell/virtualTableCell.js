@@ -1,3 +1,4 @@
+/* eslint-disable @lwc/lwc/no-async-operation */
 import { LightningElement, api } from 'lwc';
 
 export default class VirtualTableCell extends LightningElement {
@@ -5,11 +6,14 @@ export default class VirtualTableCell extends LightningElement {
     @api value;
     @api typeAttributes;
     @api rowHeightStyle;
+    @api column = {};
 
     _lowercaseType;
 
     connectedCallback() {
-        this._lowercaseType = this.type?.toLowerCase();
+        requestAnimationFrame(() => {
+            this._lowercaseType = this.type?.toLowerCase();
+        });
     }
 
     get formattedTypeAttributes() {
