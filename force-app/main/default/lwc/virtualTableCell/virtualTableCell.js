@@ -108,6 +108,6 @@ export default class VirtualTableCell extends LightningElement {
     }
 
     get isText() {
-        return this._lowercaseType === 'text' || this._lowercaseType === 'string' || !this.type;
+        return this._lowercaseType === 'text' || this._lowercaseType === 'string';
     }
 }

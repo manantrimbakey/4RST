@@ -1,32 +1,49 @@
 .outer-container {
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .header-table {
-  width: 100%;
-  background: white;
-  z-index: 2;
+    width: 100%;
+    background: white;
+    z-index: 2;
 }
 
 .table-container {
-  flex: 1;
-  overflow: auto;
-  position: relative;
+    flex: 1;
+    overflow: auto;
+    position: relative;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
 th,
 td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  width: 33.33%;
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    width: 33.33%;
+}
+
+@keyframes fadeIn {
+    from {
+        height: 0;
+    }
+    to {
+        height: 40px;
+    }
+}
+@keyframes fadeOut {
+    from {
+        height: 40px;
+    }
+    to {
+        height: 0;
+    }
 }

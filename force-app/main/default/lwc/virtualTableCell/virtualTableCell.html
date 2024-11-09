@@ -69,7 +69,7 @@
             ></lightning-formatted-location>
 
             <lightning-formatted-text
-                lwc:else
+                lwc:elseif={isText}
                 value={value}
                 linkify={formattedTypeAttributes.linkify}
             ></lightning-formatted-text>
