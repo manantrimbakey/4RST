@@ -147,12 +147,12 @@ export default class VirtualTable extends LightningElement {
         this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => {
             let key = row[this.key] || row.id || index;
             if (this._modifiedDataCache[key]) {
-                console.log(
-                    `%c cached Data Recieved %c=> %c${JSON.stringify(key)}`,
-                    'color: #4287f5; font-weight: bold;',
-                    'color: black;',
-                    'color: #42f554; font-weight: bold;'
-                );
+                // console.log(
+                //     `%c cached Data Recieved %c=> %c${JSON.stringify(key)}`,
+                //     'color: #4287f5; font-weight: bold;',
+                //     'color: black;',
+                //     'color: #42f554; font-weight: bold;'
+                // );
                 return this._modifiedDataCache[key];
             }
 
@@ -183,12 +183,12 @@ export default class VirtualTable extends LightningElement {
 
             this._modifiedDataCache[key] = modifiedRow;
 
-            console.log(
-                `%c data Added To Cache %c=> %c${JSON.stringify(key)}`,
-                'color: #4287f5; font-weight: bold;',
-                'color: black;',
-                'color: #42f554; font-weight: bold;'
-            );
+            // console.log(
+            //     `%c data Added To Cache %c=> %c${JSON.stringify(key)}`,
+            //     'color: #4287f5; font-weight: bold;',
+            //     'color: black;',
+            //     'color: #42f554; font-weight: bold;'
+            // );
 
             return modifiedRow;
         });
