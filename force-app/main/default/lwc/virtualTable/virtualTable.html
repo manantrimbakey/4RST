@@ -4,7 +4,7 @@
             <thead>
                 <tr class="slds-line-height_reset">
                     <template for:each={processedColumns} for:item="column">
-                        <th key={column.key} scope="col" class={column.headerClass}>
+                        <th key={column.key} scope="col">
                             <div class="slds-truncate" title={column.label}>{column.label}</div>
                         </th>
                     </template>
