@@ -2,12 +2,14 @@
 import { LightningElement, track, api } from 'lwc';
 
 export default class VirtualTable extends LightningElement {
+    _modifiedDataCache = {};
+
     @api key;
     @api get columns() {
         return this._columns || [];
     }
     set columns(value) {
-        this._columns = JSON.parse(JSON.stringify(value));
+        this._columns = value;
         this.processColumns();
     }
 
@@ -115,39 +117,12 @@ export default class VirtualTable extends LightningElement {
 
     updateVisibleData() {
         const endNode = Math.min(this.startNode + this.visibleNodesCount, this.allData.length);
-        this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => ({
-            ...row,
-            key: row[this.key] || row.id || index,
-            index: this.startNode + index + 1,
-            flattenedColumns: this.processedColumns?.map((column) => {
-                const typeAttributes = { ...column.typeAttributes };
-
-                // Handle dynamic field references in typeAttributes
-                if (typeAttributes) {
-                    Object.keys(typeAttributes).forEach((attr) => {
-                        if (typeAttributes[attr]?.fieldName) {
-                            typeAttributes[attr] = row[typeAttributes[attr].fieldName];
-                        }
-                    });
-                }
-
-                return {
-                    ...column,
-                    value: row[column.fieldName],
-                    typeAttributes: typeAttributes,
-                    key: `${row[this.key] || row.id || index}-${column.fieldName}` // Unique key for each cell
-                };
-            })
-        }));
-        // NOTE: Below commented code is actually faster than the above code, but the data is coming from public property which cached and freezed, Lightning Framework doesnt allow you to modify the data
-        // this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => {
-        //     if (row.processed) {
-        //         return row;
-        //     }
-
-        //     row.key = row[this.key] || row.id || index;
-        //     row.index = this.startNode + index + 1;
-        //     row.flattenedColumns = this.processedColumns?.map((column) => {
+        // NOTE : Below code is slower, everytime we are creating new object and modifying the data
+        // this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => ({
+        //     ...row,
+        //     key: row[this.key] || row.id || index,
+        //     index: this.startNode + index + 1,
+        //     flattenedColumns: this.processedColumns?.map((column) => {
         //         const typeAttributes = { ...column.typeAttributes };
 
         //         // Handle dynamic field references in typeAttributes
@@ -165,10 +140,58 @@ export default class VirtualTable extends LightningElement {
         //             typeAttributes: typeAttributes,
         //             key: `${row[this.key] || row.id || index}-${column.fieldName}` // Unique key for each cell
         //         };
-        //     });
-        //     row.processed = true;
-        //     return row;
-        // });
+        //     })
+        // }));
+
+        // NOTE: Below commented code is actually faster than the above code, but the data is coming from public property which cached and freezed, Lightning Framework doesnt allow you to modify the data. To solve this we are using cache to store the modified data
+        this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => {
+            let key = row[this.key] || row.id || index;
+            if (this._modifiedDataCache[key]) {
+                console.log(
+                    `%c cached Data Recieved %c=> %c${JSON.stringify(key)}`,
+                    'color: #4287f5; font-weight: bold;',
+                    'color: black;',
+                    'color: #42f554; font-weight: bold;'
+                );
+                return this._modifiedDataCache[key];
+            }
+
+            let modifiedRow = { ...row };
+
+            modifiedRow.key = key;
+            modifiedRow.index = this.startNode + index + 1;
+            modifiedRow.flattenedColumns = this.processedColumns?.map((column) => {
+                const typeAttributes = { ...column.typeAttributes };
+
+                // Handle dynamic field references in typeAttributes
+                if (typeAttributes) {
+                    Object.keys(typeAttributes).forEach((attr) => {
+                        if (typeAttributes[attr]?.fieldName) {
+                            typeAttributes[attr] = modifiedRow[typeAttributes[attr].fieldName];
+                        }
+                    });
+                }
+
+                return {
+                    ...column,
+                    value: modifiedRow[column.fieldName],
+                    typeAttributes: typeAttributes,
+                    key: `${key}-${column.fieldName}` // Unique key for each cell
+                };
+            });
+            modifiedRow.processed = true;
+
+            this._modifiedDataCache[key] = modifiedRow;
+
+            console.log(
+                `%c data Added To Cache %c=> %c${JSON.stringify(key)}`,
+                'color: #4287f5; font-weight: bold;',
+                'color: black;',
+                'color: #42f554; font-weight: bold;'
+            );
+
+            return modifiedRow;
+        });
     }
 
     renderedCallback() {
