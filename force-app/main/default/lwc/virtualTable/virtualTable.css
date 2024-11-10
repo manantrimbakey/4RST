@@ -1,5 +1,5 @@
 .outer-container {
-    height: 80vh;
+    height: calc(100% - 5px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -39,21 +39,4 @@ td {
     content-visibility: auto;
     contain: content;
     contain-intrinsic-size: 0 40px;
-}
-
-@keyframes fadeIn {
-    from {
-        height: 0;
-    }
-    to {
-        height: 40px;
-    }
-}
-@keyframes fadeOut {
-    from {
-        height: 40px;
-    }
-    to {
-        height: 0;
-    }
 }

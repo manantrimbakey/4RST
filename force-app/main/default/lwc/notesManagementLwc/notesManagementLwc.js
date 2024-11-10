@@ -266,4 +266,17 @@ export default class NotesManagementLwc extends LightningElement {
         ];
         this.columns = columns;
     }
+
+
+    reactiveProp = 'test';
+
+
+    handleChangeReactivetest(evt) {
+        const dataElement = evt.target.dataset.element;
+        if (dataElement === 'firstInput') {
+            this.reactiveProp = evt.target.value;
+        } else {
+            this._unReactiveProp = evt.target.value;
+        }
+    }
 }

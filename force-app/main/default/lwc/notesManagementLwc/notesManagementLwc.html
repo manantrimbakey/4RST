@@ -3,7 +3,43 @@
         <lightning-spinner alternative-text="Loading"></lightning-spinner>
     </template> -->
     <div class="full_height_viewport slds-box slds-theme_shade slds-is-relative">
-        <c-virtual-table key-field="id" lwc:if={rowData.length} columns={columns} row-data={rowData}></c-virtual-table>
+        <!-- <template lwc:if={rowData.length}>
+            <c-virtual-table
+                key-field="id"
+                lwc:if={rowData.length}
+                columns={columns}
+                row-data={rowData}
+            ></c-virtual-table>
+        </template> -->
+
+        <div class="slds-grid slds-wrap slds-gutters">
+            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                <lightning-input
+                    type="text"
+                    label="First Input 1"
+                    placeholder="Enter text 1"
+                    data-element="firstInput"
+                    onchange={handleChangeReactivetest}
+                >
+                </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                <lightning-input
+                    type="text"
+                    label="Second Input 2"
+                    placeholder="Enter text 2"
+                    data-element="secondInput"
+                    onchange={handleChangeReactivetest}
+                >
+                </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                <lightning-formatted-text value={reactiveProp}></lightning-formatted-text>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                <lightning-formatted-text value={_unReactiveProp}></lightning-formatted-text>
+            </div>
+        </div>
 
         <!-- <div style="text-align: center; height: 100%">
             <h1 style="font-size: large;" class="slds-p-around_medium">Timer: {displayTime}</h1>
