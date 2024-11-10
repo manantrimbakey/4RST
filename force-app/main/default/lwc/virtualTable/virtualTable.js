@@ -3,7 +3,9 @@ import { LightningElement, track, api } from 'lwc';
 
 export default class VirtualTable extends LightningElement {
     _modifiedDataCache = {};
+    _selectedRows = {};
 
+    @api allowRowSelection = false;
     @api key;
     @api get columns() {
         return this._columns || [];
@@ -156,7 +158,7 @@ export default class VirtualTable extends LightningElement {
                 return this._modifiedDataCache[key];
             }
 
-            let modifiedRow = { ...row };
+            let modifiedRow = { ...row, isSelected: this.allowRowSelection ? row.isSelected : false };
 
             modifiedRow.key = key;
             modifiedRow.index = this.startNode + index + 1;
@@ -203,5 +205,35 @@ export default class VirtualTable extends LightningElement {
                 this.updateVisibleData();
             }
         }
+    }
+
+    handleRowSelection(event) {
+        const rowKey = event?.target?.dataset?.row;
+        let currentRow = this._modifiedDataCache[rowKey];
+        if (event?.target?.checked) {
+            currentRow.isSelected = true;
+            this._selectedRows[rowKey] = currentRow;
+
+            console.log(
+                `%c selectedRows when checked %c=> %c${JSON.stringify(this._selectedRows)}`,
+                'color: #4287f5; font-weight: bold;',
+                'color: black;',
+                'color: #42f554; font-weight: bold;'
+            );
+        } else {
+            currentRow.isSelected = false;
+            delete this._selectedRows[rowKey];
+
+            console.log(
+                `%c selectedRows when unchecked %c=> %c${JSON.stringify(this._selectedRows)}`,
+                'color: #4287f5; font-weight: bold;',
+                'color: black;',
+                'color: #42f554; font-weight: bold;'
+            );
+        }
+    }
+
+    @api getSelectedRows() {
+        return this._selectedRows;
     }
 }

@@ -24,8 +24,8 @@ export default class NotesManagementLwc extends LightningElement {
         }
 
         this.fetchRecords();
-        this.generateColumns();
-        this.generateRowData();
+        // this.generateColumns();
+        // this.generateRowData();
     }
 
     fetchRecords() {

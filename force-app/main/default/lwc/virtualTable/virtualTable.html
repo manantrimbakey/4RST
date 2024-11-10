@@ -3,6 +3,15 @@
         <table class="header-table slds-table" role="table" aria-label="Dynamic Table">
             <thead>
                 <tr class="slds-line-height_reset">
+                    <template lwc:if={allowRowSelection}>
+                        <th scope="col">
+                            <lightning-input
+                                type="checkbox"
+                                checked={allRowsSelected}
+                                onclick={handleAllRowSelection}
+                            ></lightning-input>
+                        </th>
+                    </template>
                     <template for:each={processedColumns} for:item="column">
                         <th key={column.key} scope="col">
                             <div class="slds-truncate" title={column.label}>{column.label}</div>
@@ -24,6 +33,16 @@
                                     aria-rowindex={row.index}
                                     class="slds-hint-parent"
                                 >
+                                    <template lwc:if={allowRowSelection}>
+                                        <td>
+                                            <lightning-input
+                                                type="checkbox"
+                                                data-row={row.key}
+                                                checked={row.isSelected}
+                                                onclick={handleRowSelection}
+                                            ></lightning-input>
+                                        </td>
+                                    </template>
                                     <template for:each={row.flattenedColumns} for:item="column">
                                         <td key={column.key} role="cell" class={column.cellClass}>
                                             <c-virtual-table-cell
