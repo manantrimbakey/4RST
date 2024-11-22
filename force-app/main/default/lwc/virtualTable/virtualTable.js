@@ -261,20 +261,38 @@ export default class VirtualTable extends LightningElement {
             let key = row[this.key] || row.id || index;
             let modifiedRow = this._unreactiveProp._modifiedDataCache[key];
             if (modifiedRow) {
-                if (this._unreactiveProp._allRowsSelected && !modifiedRow.isSelected) {
-                    modifiedRow.isSelected = true;
-                    this._unreactiveProp._selectedRowsKey.add(key);
-                    this._unreactiveProp._selectedRows[key] = modifiedRow;
+                if (this.allowRowSelection) {
+                    if (this._unreactiveProp._allRowsSelected && !modifiedRow.isSelected) {
+                        modifiedRow.isSelected = true;
+                        this._unreactiveProp._selectedRowsKey.add(key);
+                        this._unreactiveProp._selectedRows[key] = modifiedRow;
+                    } else if (
+                        !this._unreactiveProp._allRowsSelected &&
+                        !modifiedRow.isSelected &&
+                        this.selectedRowsKeys.has(key)
+                    ) {
+                        modifiedRow.isSelected = true;
+                        this._unreactiveProp._selectedRowsKey.add(key);
+                        this._unreactiveProp._selectedRows[key] = modifiedRow;
+                    }
                 }
                 return modifiedRow;
             }
 
             modifiedRow = { ...row };
 
-            if (this.allowRowSelection && !this._unreactiveProp._allRowsSelected) {
-                modifiedRow.isSelected = this._unreactiveProp._selectedRowsKey.has(key);
-            } else if (this.allowRowSelection && this._unreactiveProp._allRowsSelected) {
-                modifiedRow.isSelected = true;
+            if (this.allowRowSelection) {
+                if (!this._unreactiveProp._allRowsSelected) {
+                    modifiedRow.isSelected = this._unreactiveProp._selectedRowsKey.has(key);
+                    if (modifiedRow.isSelected) {
+                        this._unreactiveProp._selectedRowsKey.add(key);
+                        this._unreactiveProp._selectedRows[key] = modifiedRow;
+                    }
+                } else if (this._unreactiveProp._allRowsSelected && !modifiedRow.isSelected) {
+                    modifiedRow.isSelected = true;
+                    this._unreactiveProp._selectedRowsKey.add(key);
+                    this._unreactiveProp._selectedRows[key] = modifiedRow;
+                }
             }
 
             modifiedRow.key = key;
