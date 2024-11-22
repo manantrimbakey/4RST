@@ -73,4 +73,17 @@ export default class VirtualTableTest extends LightningElement {
     }
 
     selectedRowsKey = ['key1', 'key2', 'key3', 'key4', 'key5', 'key6', 'key7', 'key8', 'key9', 'key10'];
+
+    handleGetSelectedRowsButtonClick() {
+        /**
+         * @type {Set}
+         */
+        let selectedRowsKeys = this.refs.virtualTableRef?.getSelectedRowsKeys();
+
+        if (selectedRowsKeys && selectedRowsKeys instanceof Set) {
+            console.log(JSON.stringify([...selectedRowsKeys]));
+        } else if (selectedRowsKeys && typeof selectedRowsKeys === 'string') {
+            console.log(selectedRowsKeys);
+        }
+    }
 }

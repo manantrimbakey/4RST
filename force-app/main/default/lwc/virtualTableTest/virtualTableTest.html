@@ -1,24 +1,36 @@
 <template>
-    <template lwc:if={isLoading}>
-        <div class="slds-is-relative">
+    <div style="height: 75vh" class="slds-theme_default slds-is-relative">
+        <template lwc:if={isLoading}>
             <lightning-spinner alternative-text="Loading" size="xx-small" variant="base"></lightning-spinner>
-        </div>
-    </template>
-    <template lwc:else>
-        <template lwc:if={rowData.length}>
-            <div style="height: 75vh">
-                <c-virtual-table
-                    key-field="id"
-                    allow-row-selection
-                    columns={columns}
-                    row-data={rowData}
-                    selected-rows-keys={selectedRowsKey}
-                    row-height="50"
-                ></c-virtual-table>
-            </div>
         </template>
         <template lwc:else>
-            <div>No data found</div>
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12">
+                    <lightning-button
+                        variant="brand"
+                        label="Get Selected Rows"
+                        onclick={handleGetSelectedRowsButtonClick}
+                    ></lightning-button>
+                </lightning-layout-item>
+                <lightning-layout-item size="12">
+                    <template lwc:if={rowData.length}>
+                        <div style="height: 60vh">
+                            <c-virtual-table
+                                key-field="id"
+                                allow-row-selection
+                                columns={columns}
+                                row-data={rowData}
+                                selected-rows-keys={selectedRowsKey}
+                                row-height="50"
+                                lwc:ref="virtualTableRef"
+                            ></c-virtual-table>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div>No data found</div>
+                    </template>
+                </lightning-layout-item>
+            </lightning-layout>
         </template>
-    </template>
+    </div>
 </template>
