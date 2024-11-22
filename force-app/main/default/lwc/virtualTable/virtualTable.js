@@ -3,50 +3,55 @@
 import { LightningElement, track, api } from 'lwc';
 
 export default class VirtualTable extends LightningElement {
-    _modifiedDataCache = {};
-    _selectedRows = {};
-    _allRowsSelected = false;
+    _unreactiveProp = {
+        _modifiedDataCache: {},
+        _selectedRows: {},
+        _allRowsSelected: false,
+        _scrollTop: 0,
+        _columns: [],
+        allData: [],
+        rowHeight: 40,
+        nodePadding: 10,
+        viewportHeight: 400
+    };
 
     @api allowRowSelection = false;
     @api key;
     @api get columns() {
-        return this._columns || [];
+        return this._unreactiveProp._columns || [];
     }
     set columns(value) {
-        this._columns = value;
+        this._unreactiveProp._columns = value;
         this.processColumns();
     }
 
     @api
     get rowData() {
-        return this.allData;
+        return this._unreactiveProp.allData;
     }
 
     set rowData(value) {
-        this.allData = value || [];
+        this._unreactiveProp.allData = value || [];
         this.updateVisibleData();
     }
 
+    /**
+     * Get all selected rows
+     * @returns {Object | String}
+     */
     @api getSelectedRows() {
-        return this._selectedRows;
+        if (this._unreactiveProp._allRowsSelected) {
+            return 'allRows';
+        }
+        return this._unreactiveProp._selectedRows;
     }
 
     @track visibleData = [];
 
-    allData = [];
-    // _columns = [];
-    // processedColumns = [];
-
-    // Configuration
-    rowHeight = 40;
-    nodePadding = 10;
-    viewportHeight = 400;
-    // scrollTop = 0;
-
     processColumns() {
-        if (!this._columns) return;
+        if (!this._unreactiveProp._columns) return;
 
-        this.processedColumns = this._columns.map((column) => ({
+        this.processedColumns = this._unreactiveProp._columns.map((column) => ({
             ...column,
             key: column.fieldName || column.label,
             type: column.type || 'text'
@@ -55,25 +60,27 @@ export default class VirtualTable extends LightningElement {
 
     // Computed properties for virtual scrolling
     get totalContentHeight() {
-        return this.allData.length * this.rowHeight;
+        return this._unreactiveProp.allData.length * this._unreactiveProp.rowHeight;
     }
 
     get scrollTop() {
-        return this._scrollTop || 0;
+        return this._unreactiveProp._scrollTop || 0;
     }
 
     get startNode() {
-        let start = Math.floor(this.scrollTop / this.rowHeight) - this.nodePadding;
+        let start = Math.floor(this.scrollTop / this._unreactiveProp.rowHeight) - this._unreactiveProp.nodePadding;
         return Math.max(0, start);
     }
 
     get visibleNodesCount() {
-        let count = Math.ceil(this.viewportHeight / this.rowHeight) + 4 * this.nodePadding;
-        return Math.min(this.allData.length - this.startNode, count);
+        let count =
+            Math.ceil(this._unreactiveProp.viewportHeight / this._unreactiveProp.rowHeight) +
+            4 * this._unreactiveProp.nodePadding;
+        return Math.min(this._unreactiveProp.allData.length - this.startNode, count);
     }
 
     get offsetY() {
-        return this.startNode * this.rowHeight;
+        return this.startNode * this._unreactiveProp.rowHeight;
     }
 
     get contentStyle() {
@@ -85,7 +92,7 @@ export default class VirtualTable extends LightningElement {
     }
 
     get rowHeightStyle() {
-        return `height: ${this.rowHeight}px;`;
+        return `height: ${this._unreactiveProp.rowHeight}px;`;
     }
 
     connectedCallback() {
@@ -97,42 +104,33 @@ export default class VirtualTable extends LightningElement {
             window.cancelAnimationFrame(this.scrollTimeout);
         }
         let scrollTop = event?.target?.scrollTop;
-        // if (scrollTop <= 0 || scrollTop + this.rowHeight + this.viewportHeight >= this.totalContentHeight) {
-        //     return;
-        // }
-        // Cancel any pending animation frame
 
-        // Skip processing if we're at the top or bottom of the scroll
-
-        // Schedule the update on the next animation frame
         this.scrollTimeout = window.requestAnimationFrame(() => {
-            // window.requestAnimationFrame(() => {
-            // this.scrollTop = scrollTop;
-
-            if (this.scrollTop === scrollTop || Math.abs((this.scrollTop || 0) - scrollTop) < 9 * this.rowHeight) {
+            if (
+                this.scrollTop === scrollTop ||
+                Math.abs((this._unreactiveProp._scrollTop || 0) - scrollTop) < 9 * this._unreactiveProp.rowHeight
+            ) {
                 return;
             }
-            this._scrollTop = scrollTop;
+            this._unreactiveProp._scrollTop = scrollTop;
             this.updateVisibleData();
         });
     }
 
     disconnectedCallback() {
-        // Cleanup any pending animation frame when component is destroyed
         if (this.scrollTimeout) {
             window.cancelAnimationFrame(this.scrollTimeout);
         }
     }
 
     updateVisibleData() {
-        const endNode = Math.min(this.startNode + this.visibleNodesCount, this.allData.length);
-        // NOTE: Below commented code is actually faster than the above code, but the data is coming from public property which cached and freezed, Lightning Framework doesnt allow you to modify the data. To solve this we are using cache to store the modified data
-        this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => {
+        const endNode = Math.min(this.startNode + this.visibleNodesCount, this._unreactiveProp.allData.length);
+        this.visibleData = this._unreactiveProp.allData.slice(this.startNode, endNode).map((row, index) => {
             let key = row[this.key] || row.id || index;
-            if (this._modifiedDataCache[key]) {
-                console.log(`%c allRowsSelected %c=> %c${this._allRowsSelected}`, 'color: #4287f5; font-weight: bold;', 'color: black;', 'color: #42f554; font-weight: bold;');
-                this._allRowsSelected && (this._modifiedDataCache[key].isSelected = true);
-                return this._modifiedDataCache[key];
+            if (this._unreactiveProp._modifiedDataCache[key]) {
+                this._unreactiveProp._allRowsSelected &&
+                    (this._unreactiveProp._modifiedDataCache[key].isSelected = true);
+                return this._unreactiveProp._modifiedDataCache[key];
             }
 
             let modifiedRow = { ...row, isSelected: this.allowRowSelection ? row.isSelected : false };
@@ -142,13 +140,14 @@ export default class VirtualTable extends LightningElement {
             modifiedRow.flattenedColumns = this.processedColumns?.map((column) => {
                 const typeAttributes = { ...column.typeAttributes };
 
-                // Handle dynamic field references in typeAttributes
                 if (typeAttributes) {
-                    Object.keys(typeAttributes).forEach((attr) => {
+                    const keys = Object.keys(typeAttributes);
+                    for (let i = 0; i < keys.length; i++) {
+                        const attr = keys[i];
                         if (typeAttributes[attr]?.fieldName) {
                             typeAttributes[attr] = modifiedRow[typeAttributes[attr].fieldName];
                         }
-                    });
+                    }
                 }
 
                 return {
@@ -160,7 +159,7 @@ export default class VirtualTable extends LightningElement {
             });
             modifiedRow.processed = true;
 
-            this._modifiedDataCache[key] = modifiedRow;
+            this._unreactiveProp._modifiedDataCache[key] = modifiedRow;
 
             return modifiedRow;
         });
@@ -179,47 +178,31 @@ export default class VirtualTable extends LightningElement {
 
     handleRowSelection(event) {
         const rowKey = event?.target?.dataset?.row;
-        this._allRowsSelected = false;
-        let currentRow = this._modifiedDataCache[rowKey];
+        this._unreactiveProp._allRowsSelected = false;
+        let currentRow = this._unreactiveProp._modifiedDataCache[rowKey];
         if (event?.target?.checked) {
             currentRow.isSelected = true;
-            this._selectedRows[rowKey] = currentRow;
-
-            console.log(
-                `%c selectedRows when checked %c=> %c${JSON.stringify(this._selectedRows)}`,
-                'color: #4287f5; font-weight: bold;',
-                'color: black;',
-                'color: #42f554; font-weight: bold;'
-            );
+            this._unreactiveProp._selectedRows[rowKey] = currentRow;
         } else {
             currentRow.isSelected = false;
-            delete this._selectedRows[rowKey];
-
-            console.log(
-                `%c selectedRows when unchecked %c=> %c${JSON.stringify(this._selectedRows)}`,
-                'color: #4287f5; font-weight: bold;',
-                'color: black;',
-                'color: #42f554; font-weight: bold;'
-            );
+            delete this._unreactiveProp._selectedRows[rowKey];
         }
     }
 
     handleAllRowSelection(event) {
-        // Update Visible Data
-        this._selectedRows = {};
+        this._unreactiveProp._selectedRows = {};
+        this._unreactiveProp._allRowsSelected = event?.target?.checked;
 
-        this._allRowsSelected = event?.target?.checked;
-        console.log(`%c allRowsSelected handleChange %c=> %c${this._allRowsSelected}`, 'color: #4287f5; font-weight: bold;', 'color: black;', 'color: #42f554; font-weight: bold;');
+        for (let i = 0; i < this.visibleData.length; i++) {
+            const row = this.visibleData[i];
+            row.isSelected = this._unreactiveProp._allRowsSelected;
 
-        // if (this.scrollTimeoutAllRowSelection) {
-        //     window.cancelAnimationFrame(this.scrollTimeoutAllRowSelection);
-        // }
-
-        // this.scrollTimeoutAllRowSelection = window.requestAnimationFrame(() => {
-            for (let index = 0; index < this._modifiedDataCache.length; index++) {
-                this._modifiedDataCache[index].isSelected = this._allRowsSelected;
-                this.visibleData?.[index] && (this.visibleData[index].isSelected = this._allRowsSelected);
+            if (row.key) {
+                this._unreactiveProp._modifiedDataCache[row.key].isSelected = this._unreactiveProp._allRowsSelected;
+                if (this._unreactiveProp._allRowsSelected) {
+                    this._unreactiveProp._selectedRows[row.key] = this._unreactiveProp._modifiedDataCache[row.key];
+                }
             }
-        // });
+        }
     }
 }
