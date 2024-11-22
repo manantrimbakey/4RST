@@ -15,10 +15,10 @@ export default class VirtualTableTest extends LightningElement {
 
     generateRowData() {
         let rowData = [];
-        // Generate 100 sample rows with various data types
+        // Generate 500000 sample rows with various data types
         for (let i = 0; i < 500000; i++) {
             rowData.push({
-                id: i,
+                id: 'key' + i,
                 name: `Task ${i}`,
                 date: new Date(2024, 0, i + 1).toISOString(),
                 amount: Math.round(Math.random() * 10000) / 100,
@@ -71,4 +71,6 @@ export default class VirtualTableTest extends LightningElement {
         ];
         this.columns = columns;
     }
+
+    selectedRowsKey = ['key1', 'key2', 'key3', 'key4', 'key5', 'key6', 'key7', 'key8', 'key9', 'key10'];
 }
