@@ -1,9 +1,11 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable @lwc/lwc/no-async-operation */
 import { LightningElement, track, api } from 'lwc';
 
 export default class VirtualTable extends LightningElement {
     _modifiedDataCache = {};
     _selectedRows = {};
+    _allRowsSelected = false;
 
     @api allowRowSelection = false;
     @api key;
@@ -19,9 +21,14 @@ export default class VirtualTable extends LightningElement {
     get rowData() {
         return this.allData;
     }
+
     set rowData(value) {
         this.allData = value || [];
         this.updateVisibleData();
+    }
+
+    @api getSelectedRows() {
+        return this._selectedRows;
     }
 
     @track visibleData = [];
@@ -119,42 +126,12 @@ export default class VirtualTable extends LightningElement {
 
     updateVisibleData() {
         const endNode = Math.min(this.startNode + this.visibleNodesCount, this.allData.length);
-        // NOTE : Below code is slower, everytime we are creating new object and modifying the data
-        // this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => ({
-        //     ...row,
-        //     key: row[this.key] || row.id || index,
-        //     index: this.startNode + index + 1,
-        //     flattenedColumns: this.processedColumns?.map((column) => {
-        //         const typeAttributes = { ...column.typeAttributes };
-
-        //         // Handle dynamic field references in typeAttributes
-        //         if (typeAttributes) {
-        //             Object.keys(typeAttributes).forEach((attr) => {
-        //                 if (typeAttributes[attr]?.fieldName) {
-        //                     typeAttributes[attr] = row[typeAttributes[attr].fieldName];
-        //                 }
-        //             });
-        //         }
-
-        //         return {
-        //             ...column,
-        //             value: row[column.fieldName],
-        //             typeAttributes: typeAttributes,
-        //             key: `${row[this.key] || row.id || index}-${column.fieldName}` // Unique key for each cell
-        //         };
-        //     })
-        // }));
-
         // NOTE: Below commented code is actually faster than the above code, but the data is coming from public property which cached and freezed, Lightning Framework doesnt allow you to modify the data. To solve this we are using cache to store the modified data
         this.visibleData = this.allData.slice(this.startNode, endNode).map((row, index) => {
             let key = row[this.key] || row.id || index;
             if (this._modifiedDataCache[key]) {
-                // console.log(
-                //     `%c cached Data Recieved %c=> %c${JSON.stringify(key)}`,
-                //     'color: #4287f5; font-weight: bold;',
-                //     'color: black;',
-                //     'color: #42f554; font-weight: bold;'
-                // );
+                console.log(`%c allRowsSelected %c=> %c${this._allRowsSelected}`, 'color: #4287f5; font-weight: bold;', 'color: black;', 'color: #42f554; font-weight: bold;');
+                this._allRowsSelected && (this._modifiedDataCache[key].isSelected = true);
                 return this._modifiedDataCache[key];
             }
 
@@ -185,13 +162,6 @@ export default class VirtualTable extends LightningElement {
 
             this._modifiedDataCache[key] = modifiedRow;
 
-            // console.log(
-            //     `%c data Added To Cache %c=> %c${JSON.stringify(key)}`,
-            //     'color: #4287f5; font-weight: bold;',
-            //     'color: black;',
-            //     'color: #42f554; font-weight: bold;'
-            // );
-
             return modifiedRow;
         });
     }
@@ -209,6 +179,7 @@ export default class VirtualTable extends LightningElement {
 
     handleRowSelection(event) {
         const rowKey = event?.target?.dataset?.row;
+        this._allRowsSelected = false;
         let currentRow = this._modifiedDataCache[rowKey];
         if (event?.target?.checked) {
             currentRow.isSelected = true;
@@ -233,7 +204,22 @@ export default class VirtualTable extends LightningElement {
         }
     }
 
-    @api getSelectedRows() {
-        return this._selectedRows;
+    handleAllRowSelection(event) {
+        // Update Visible Data
+        this._selectedRows = {};
+
+        this._allRowsSelected = event?.target?.checked;
+        console.log(`%c allRowsSelected handleChange %c=> %c${this._allRowsSelected}`, 'color: #4287f5; font-weight: bold;', 'color: black;', 'color: #42f554; font-weight: bold;');
+
+        // if (this.scrollTimeoutAllRowSelection) {
+        //     window.cancelAnimationFrame(this.scrollTimeoutAllRowSelection);
+        // }
+
+        // this.scrollTimeoutAllRowSelection = window.requestAnimationFrame(() => {
+            for (let index = 0; index < this._modifiedDataCache.length; index++) {
+                this._modifiedDataCache[index].isSelected = this._allRowsSelected;
+                this.visibleData?.[index] && (this.visibleData[index].isSelected = this._allRowsSelected);
+            }
+        // });
     }
 }
