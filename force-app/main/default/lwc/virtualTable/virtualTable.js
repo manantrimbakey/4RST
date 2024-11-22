@@ -1,7 +1,22 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable @lwc/lwc/no-async-operation */
-import { LightningElement, track, api } from 'lwc';
 
+import { LightningElement, track, api } from 'lwc';
+/**
+ * @module VirtualTable
+ * @description This module defines a VirtualTable component that implements a virtual scrolling table
+ * with row selection capabilities. It manages the display of rows based on the scroll position and
+ * allows for selecting individual rows or all rows at once.
+ *
+ * @exports VirtualTable
+ * @extends LightningElement
+ *
+ * @property {boolean} allowRowSelection - Controls whether rows can be selected
+ * @property {string} key - Unique identifier field for each row
+ * @property {Array} columns - Table column definitions
+ * @property {Array} rowData - Data to be displayed in the table
+ * @method getSelectedRows - Returns currently selected rows
+ */
 export default class VirtualTable extends LightningElement {
     _unreactiveProp = {
         _modifiedDataCache: {},
