@@ -40,6 +40,9 @@ export default class VirtualTable extends LightningElement {
     }
 
     @api getSelectedRowsKeys() {
+        if (!this.allowRowSelection) {
+            return new Set();
+        }
         if (this._unreactiveProp._allRowsSelected) {
             return 'allRows';
         }

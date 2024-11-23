@@ -15,9 +15,20 @@
                 <lightning-layout-item size="12">
                     <template lwc:if={rowData.length}>
                         <div style="height: 60vh">
-                            <c-virtual-table
+                            <!-- NOTE : With Row Selections -->
+                            <!-- <c-virtual-table
                                 key-field="id"
                                 allow-row-selection
+                                columns={columns}
+                                row-data={rowData}
+                                selected-rows-keys={selectedRowsKey}
+                                row-height="50"
+                                lwc:ref="virtualTableRef"
+                            ></c-virtual-table> -->
+
+                            <!-- NOTE: Without Row Selections -->
+                            <c-virtual-table
+                                key-field="id"
                                 columns={columns}
                                 row-data={rowData}
                                 selected-rows-keys={selectedRowsKey}
