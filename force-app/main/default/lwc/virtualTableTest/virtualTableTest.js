@@ -16,7 +16,8 @@ export default class VirtualTableTest extends LightningElement {
     generateRowData() {
         let rowData = [];
         // Generate 500000 sample rows with various data types
-        for (let i = 0; i < 500000; i++) {
+        for (let i = 0; i < 50000; i++) {
+        // for (let i = 0; i < 500000; i++) {
             rowData.push({
                 id: 'key' + i,
                 name: `Task ${i}`,

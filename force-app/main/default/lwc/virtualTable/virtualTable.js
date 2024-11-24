@@ -16,6 +16,8 @@ export default class VirtualTable extends LightningElement {
         _selectedRowsKey: new Set()
     };
 
+    @api label = 'Datatable';
+
     @api allowRowSelection = false;
 
     @api key;
@@ -84,7 +86,10 @@ export default class VirtualTable extends LightningElement {
     }
 
     get totalContentHeight() {
-        return this._unreactiveProp.allData.length * this._unreactiveProp.rowHeight;
+        return Math.max(
+            this._unreactiveProp.allData.length * this._unreactiveProp.rowHeight,
+            this._unreactiveProp.viewportHeight || 0
+        );
     }
 
     get scrollTop() {
@@ -154,26 +159,18 @@ export default class VirtualTable extends LightningElement {
             let modifiedRow = this._unreactiveProp._modifiedDataCache[key];
             if (modifiedRow) {
                 if (this.allowRowSelection) {
-                    if (this._unreactiveProp._allRowsSelected && !modifiedRow.isSelected) {
-                        modifiedRow.isSelected = true;
-                        this._unreactiveProp._selectedRowsKey.add(key);
-                        this._unreactiveProp._selectedRows[key] = modifiedRow;
-                    } else if (
-                        !this._unreactiveProp._allRowsSelected &&
-                        !modifiedRow.isSelected &&
-                        this.selectedRowsKeys.has(key)
-                    ) {
-                        modifiedRow.isSelected = true;
-                        this._unreactiveProp._selectedRowsKey.add(key);
-                        this._unreactiveProp._selectedRows[key] = modifiedRow;
-                    } else if (
-                        !this._unreactiveProp._allRowsSelected &&
-                        modifiedRow.isSelected &&
-                        !this.selectedRowsKeys.has(key)
-                    ) {
-                        modifiedRow.isSelected = false;
-                        this._unreactiveProp._selectedRowsKey.delete(key);
-                        delete this._unreactiveProp._selectedRows[key];
+                    const shouldBeSelected = this._unreactiveProp._allRowsSelected || this.selectedRowsKeys.has(key);
+
+                    if (modifiedRow.isSelected !== shouldBeSelected) {
+                        modifiedRow.isSelected = shouldBeSelected;
+
+                        if (shouldBeSelected) {
+                            this._unreactiveProp._selectedRowsKey.add(key);
+                            this._unreactiveProp._selectedRows[key] = modifiedRow;
+                        } else {
+                            this._unreactiveProp._selectedRowsKey.delete(key);
+                            delete this._unreactiveProp._selectedRows[key];
+                        }
                     }
                 }
                 return modifiedRow;
@@ -182,14 +179,11 @@ export default class VirtualTable extends LightningElement {
             modifiedRow = { ...row };
 
             if (this.allowRowSelection) {
-                if (!this._unreactiveProp._allRowsSelected) {
-                    modifiedRow.isSelected = this._unreactiveProp._selectedRowsKey.has(key);
-                    if (modifiedRow.isSelected) {
-                        this._unreactiveProp._selectedRowsKey.add(key);
-                        this._unreactiveProp._selectedRows[key] = modifiedRow;
-                    }
-                } else if (this._unreactiveProp._allRowsSelected && !modifiedRow.isSelected) {
-                    modifiedRow.isSelected = true;
+                const shouldBeSelected =
+                    this._unreactiveProp._allRowsSelected || this._unreactiveProp._selectedRowsKey.has(key);
+                modifiedRow.isSelected = shouldBeSelected;
+
+                if (shouldBeSelected) {
                     this._unreactiveProp._selectedRowsKey.add(key);
                     this._unreactiveProp._selectedRows[key] = modifiedRow;
                 }
@@ -229,7 +223,7 @@ export default class VirtualTable extends LightningElement {
         if (!this.hasInitialized) {
             const container = this.template.querySelector('.table-container');
             if (container) {
-                this.viewportHeight = container.clientHeight;
+                this._unreactiveProp.viewportHeight = container.getBoundingClientRect().height;
                 this.hasInitialized = true;
                 this.updateVisibleData();
             }

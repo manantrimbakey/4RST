@@ -1,6 +1,6 @@
 <template>
     <div class="outer-container slds-theme_default">
-        <table class="header-table slds-table" role="table" aria-label="Dynamic Table">
+        <table class="header-table slds-table" role="table" aria-label={label}>
             <thead>
                 <tr class="slds-line-height_reset">
                     <template lwc:if={allowRowSelection}>
@@ -21,9 +21,10 @@
             </thead>
         </table>
         <div class="table-container" onscroll={handleScroll} role="region" aria-label="Scrollable Table" tabindex="0">
+            <div id="table-description" class="slds-assistive-text">{label}</div>
             <div style={contentStyle}>
                 <div style={offsetStyle}>
-                    <table role="table" class="slds-table">
+                    <table role="table" class="slds-table" aria-describedby="table-description">
                         <tbody>
                             <template for:each={visibleData} for:item="row">
                                 <tr
