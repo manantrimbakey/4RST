@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable @lwc/lwc/no-async-operation */
-import { LightningElement, track, api } from 'lwc';
+import { LightningElement, track, api } from "lwc";
 
 export default class VirtualTable extends LightningElement {
     _unreactiveProp = {
@@ -13,10 +13,11 @@ export default class VirtualTable extends LightningElement {
         rowHeight: 40,
         nodePadding: 10,
         viewportHeight: 400,
-        _selectedRowsKey: new Set()
+        _selectedRowsKey: new Set(),
+        rafIdIntersectionObserver: null
     };
 
-    @api label = 'Datatable';
+    @api label = "Datatable";
 
     @api allowRowSelection = false;
 
@@ -46,7 +47,7 @@ export default class VirtualTable extends LightningElement {
             return new Set();
         }
         if (this._unreactiveProp._allRowsSelected) {
-            return 'allRows';
+            return "allRows";
         }
         return this._unreactiveProp._selectedRowsKey;
     }
@@ -54,7 +55,9 @@ export default class VirtualTable extends LightningElement {
     @api
     set selectedRowsKeys(value) {
         if (value) {
-            this._unreactiveProp._selectedRowsKey = new Set(JSON.parse(JSON.stringify(value)));
+            this._unreactiveProp._selectedRowsKey = new Set(
+                JSON.parse(JSON.stringify(value))
+            );
         } else {
             this._unreactiveProp._selectedRowsKey = new Set();
         }
@@ -81,13 +84,14 @@ export default class VirtualTable extends LightningElement {
         this.processedColumns = this._unreactiveProp._columns.map((column) => ({
             ...column,
             key: column.fieldName || column.label,
-            type: column.type || 'text'
+            type: column.type || "text"
         }));
     }
 
     get totalContentHeight() {
         return Math.max(
-            this._unreactiveProp.allData.length * this._unreactiveProp.rowHeight,
+            this._unreactiveProp.allData.length *
+                this._unreactiveProp.rowHeight,
             this._unreactiveProp.viewportHeight || 0
         );
     }
@@ -97,15 +101,23 @@ export default class VirtualTable extends LightningElement {
     }
 
     get startNode() {
-        let start = Math.floor(this.scrollTop / this._unreactiveProp.rowHeight) - this._unreactiveProp.nodePadding;
+        let start =
+            Math.floor(this.scrollTop / this._unreactiveProp.rowHeight) -
+            this._unreactiveProp.nodePadding;
         return Math.max(0, start);
     }
 
     get visibleNodesCount() {
         let count =
-            Math.ceil(this._unreactiveProp.viewportHeight / this._unreactiveProp.rowHeight) +
+            Math.ceil(
+                this._unreactiveProp.viewportHeight /
+                    this._unreactiveProp.rowHeight
+            ) +
             4 * this._unreactiveProp.nodePadding;
-        return Math.min(this._unreactiveProp.allData.length - this.startNode, count);
+        return Math.min(
+            this._unreactiveProp.allData.length - this.startNode,
+            count
+        );
     }
 
     get offsetY() {
@@ -118,6 +130,10 @@ export default class VirtualTable extends LightningElement {
 
     get offsetStyle() {
         return `transform: translateY(${this.offsetY}px); position: absolute; width: 100%;`;
+    }
+
+    get headerStyle() {
+        return `transform: translateY(-${this.offsetY}px);`;
     }
 
     get rowHeightStyle() {
@@ -137,7 +153,8 @@ export default class VirtualTable extends LightningElement {
         this.scrollTimeout = window.requestAnimationFrame(() => {
             if (
                 this.scrollTop === scrollTop ||
-                Math.abs((this._unreactiveProp._scrollTop || 0) - scrollTop) < 9 * this._unreactiveProp.rowHeight
+                Math.abs((this._unreactiveProp._scrollTop || 0) - scrollTop) <
+                    9 * this._unreactiveProp.rowHeight
             ) {
                 return;
             }
@@ -146,6 +163,13 @@ export default class VirtualTable extends LightningElement {
         });
     }
 
+    // updateHeaderPosition() {
+    //     const header = this.template.querySelector(".header-row");
+    //     if (header) {
+    //         header.style.transform = `translateY(${this.scrollTop}px)`;
+    //     }
+    // }
+
     disconnectedCallback() {
         if (this.scrollTimeout) {
             window.cancelAnimationFrame(this.scrollTimeout);
@@ -153,80 +177,128 @@ export default class VirtualTable extends LightningElement {
     }
 
     updateVisibleData() {
-        const endNode = Math.min(this.startNode + this.visibleNodesCount, this._unreactiveProp.allData.length);
-        this.visibleData = this._unreactiveProp.allData.slice(this.startNode, endNode).map((row, index) => {
-            let key = row[this.key] || row.id || index;
-            let modifiedRow = this._unreactiveProp._modifiedDataCache[key];
-            if (modifiedRow) {
+        const endNode = Math.min(
+            this.startNode + this.visibleNodesCount,
+            this._unreactiveProp.allData.length
+        );
+        this.visibleData = this._unreactiveProp.allData
+            .slice(this.startNode, endNode)
+            .map((row, index) => {
+                let key = row[this.key] || row.id || index;
+                let modifiedRow = this._unreactiveProp._modifiedDataCache[key];
+                if (modifiedRow) {
+                    if (this.allowRowSelection) {
+                        const shouldBeSelected =
+                            this._unreactiveProp._allRowsSelected ||
+                            this.selectedRowsKeys.has(key);
+
+                        if (modifiedRow.isSelected !== shouldBeSelected) {
+                            modifiedRow.isSelected = shouldBeSelected;
+
+                            if (shouldBeSelected) {
+                                this._unreactiveProp._selectedRowsKey.add(key);
+                                this._unreactiveProp._selectedRows[key] =
+                                    modifiedRow;
+                            } else {
+                                this._unreactiveProp._selectedRowsKey.delete(
+                                    key
+                                );
+                                delete this._unreactiveProp._selectedRows[key];
+                            }
+                        }
+                    }
+                    return modifiedRow;
+                }
+
+                modifiedRow = { ...row };
+
                 if (this.allowRowSelection) {
-                    const shouldBeSelected = this._unreactiveProp._allRowsSelected || this.selectedRowsKeys.has(key);
+                    const shouldBeSelected =
+                        this._unreactiveProp._allRowsSelected ||
+                        this._unreactiveProp._selectedRowsKey.has(key);
+                    modifiedRow.isSelected = shouldBeSelected;
 
-                    if (modifiedRow.isSelected !== shouldBeSelected) {
-                        modifiedRow.isSelected = shouldBeSelected;
-
-                        if (shouldBeSelected) {
-                            this._unreactiveProp._selectedRowsKey.add(key);
-                            this._unreactiveProp._selectedRows[key] = modifiedRow;
-                        } else {
-                            this._unreactiveProp._selectedRowsKey.delete(key);
-                            delete this._unreactiveProp._selectedRows[key];
-                        }
+                    if (shouldBeSelected) {
+                        this._unreactiveProp._selectedRowsKey.add(key);
+                        this._unreactiveProp._selectedRows[key] = modifiedRow;
                     }
                 }
+
+                modifiedRow.key = key;
+                modifiedRow.index = this.startNode + index + 1;
+                modifiedRow.flattenedColumns = this.processedColumns?.map(
+                    (column) => {
+                        const typeAttributes = { ...column.typeAttributes };
+
+                        if (typeAttributes) {
+                            const keys = Object.keys(typeAttributes);
+                            for (let i = 0; i < keys.length; i++) {
+                                const attr = keys[i];
+                                if (typeAttributes[attr]?.fieldName) {
+                                    typeAttributes[attr] =
+                                        modifiedRow[
+                                            typeAttributes[attr].fieldName
+                                        ];
+                                }
+                            }
+                        }
+
+                        return {
+                            ...column,
+                            value: modifiedRow[column.fieldName],
+                            typeAttributes: typeAttributes,
+                            key: `${key}-${column.fieldName}`
+                        };
+                    }
+                );
+                modifiedRow.processed = true;
+
+                this._unreactiveProp._modifiedDataCache[key] = modifiedRow;
+
                 return modifiedRow;
-            }
-
-            modifiedRow = { ...row };
-
-            if (this.allowRowSelection) {
-                const shouldBeSelected =
-                    this._unreactiveProp._allRowsSelected || this._unreactiveProp._selectedRowsKey.has(key);
-                modifiedRow.isSelected = shouldBeSelected;
-
-                if (shouldBeSelected) {
-                    this._unreactiveProp._selectedRowsKey.add(key);
-                    this._unreactiveProp._selectedRows[key] = modifiedRow;
-                }
-            }
-
-            modifiedRow.key = key;
-            modifiedRow.index = this.startNode + index + 1;
-            modifiedRow.flattenedColumns = this.processedColumns?.map((column) => {
-                const typeAttributes = { ...column.typeAttributes };
-
-                if (typeAttributes) {
-                    const keys = Object.keys(typeAttributes);
-                    for (let i = 0; i < keys.length; i++) {
-                        const attr = keys[i];
-                        if (typeAttributes[attr]?.fieldName) {
-                            typeAttributes[attr] = modifiedRow[typeAttributes[attr].fieldName];
-                        }
-                    }
-                }
-
-                return {
-                    ...column,
-                    value: modifiedRow[column.fieldName],
-                    typeAttributes: typeAttributes,
-                    key: `${key}-${column.fieldName}` // Unique key for each cell
-                };
             });
-            modifiedRow.processed = true;
 
-            this._unreactiveProp._modifiedDataCache[key] = modifiedRow;
+        // let tableRows = this.template.querySelectorAll('.visible-row');
 
-            return modifiedRow;
-        });
+        // let observer = new IntersectionObserver((entries) => {
+        //     entries.forEach((entry) => {
+        //         if (entry.isIntersecting) {
+        //             console.log('entry.target', entry.target);
+        //         }
+        //     });
+        // });
+
+        // observer.observe(tableRows);
     }
 
     renderedCallback() {
         if (!this.hasInitialized) {
-            const container = this.template.querySelector('.table-container');
+            const container = this.template.querySelector(".table-container");
             if (container) {
-                this._unreactiveProp.viewportHeight = container.getBoundingClientRect().height;
+                this._unreactiveProp.viewportHeight =
+                    container.getBoundingClientRect().height;
                 this.hasInitialized = true;
                 this.updateVisibleData();
             }
+
+            let resizeObserver = new ResizeObserver((entries) => {
+                let defaultHeaderCell = this.template.querySelectorAll("th");
+                let customHeaderCell = this.template.querySelectorAll(
+                    ".custom-header-cell"
+                );
+
+                for (let index = 0; index < defaultHeaderCell.length; index++) {
+                    const element = customHeaderCell[index];
+                    if (element) {
+                        element.style.width = `${
+                            defaultHeaderCell[index].clientWidth
+                        }px`;
+                    }
+                }
+            });
+
+            let table = this.template.querySelector("table");
+            resizeObserver.observe(table);
         }
     }
 

@@ -1,4 +1,3 @@
-/* eslint-disable @lwc/lwc/no-async-operation */
 import { LightningElement, api } from 'lwc';
 
 export default class VirtualTableCell extends LightningElement {
@@ -8,61 +7,86 @@ export default class VirtualTableCell extends LightningElement {
     @api rowHeightStyle;
     @api column = {};
 
+    _unreactiveProp = {
+        rafIdConnectedCallback: null,
+        rafIdFormattedTypeAttributes: null
+    };
+
     _lowercaseType;
 
     connectedCallback() {
-        requestAnimationFrame(() => {
-            this._lowercaseType = this.type?.toLowerCase();
-        });
+        this._lowercaseType = this.type?.toLowerCase();
     }
 
     get formattedTypeAttributes() {
-        return this.typeAttributes || {};
+        if (!this._formattedTypeAttributes) {
+            this._formattedTypeAttributes = this.typeAttributes || {};
+        }
+        return this._formattedTypeAttributes;
     }
 
     get numberFormatStyle() {
+        if (!this._numberFormatStyle) {
+            this._numberFormatStyle = this._computeNumberFormatStyle();
+        }
+        return this._numberFormatStyle;
+    }
+
+    _computeNumberFormatStyle() {
+        const attrs = this.formattedTypeAttributes;
         if (this._lowercaseType === 'currency') {
             return {
                 style: 'currency',
-                currencyCode: this.formattedTypeAttributes.currencyCode || 'USD',
-                currencyDisplayAs: this.formattedTypeAttributes.currencyDisplayAs || 'symbol',
-                minimumFractionDigits: this.formattedTypeAttributes.minimumFractionDigits,
-                maximumFractionDigits: this.formattedTypeAttributes.maximumFractionDigits
+                currencyCode: attrs.currencyCode || 'USD',
+                currencyDisplayAs: attrs.currencyDisplayAs || 'symbol',
+                minimumFractionDigits: attrs.minimumFractionDigits,
+                maximumFractionDigits: attrs.maximumFractionDigits
             };
         }
         if (this._lowercaseType === 'percent') {
             return {
                 style: 'percent',
-                minimumFractionDigits: this.formattedTypeAttributes.minimumFractionDigits,
-                maximumFractionDigits: this.formattedTypeAttributes.maximumFractionDigits
+                minimumFractionDigits: attrs.minimumFractionDigits,
+                maximumFractionDigits: attrs.maximumFractionDigits
             };
         }
         return {
-            minimumFractionDigits: this.formattedTypeAttributes.minimumFractionDigits,
-            maximumFractionDigits: this.formattedTypeAttributes.maximumFractionDigits
+            minimumFractionDigits: attrs.minimumFractionDigits,
+            maximumFractionDigits: attrs.maximumFractionDigits
         };
     }
 
     get dateFormatAttributes() {
+        if (!this._dateFormatAttributes) {
+            this._dateFormatAttributes = this._computeDateFormatAttributes();
+        }
+        return this._dateFormatAttributes;
+    }
+
+    _computeDateFormatAttributes() {
+        const attrs = this.formattedTypeAttributes;
         return {
-            year: this.formattedTypeAttributes.year || 'numeric',
-            month: this.formattedTypeAttributes.month || 'numeric',
-            day: this.formattedTypeAttributes.day || 'numeric',
-            weekday: this.formattedTypeAttributes.weekday,
-            era: this.formattedTypeAttributes.era,
-            timeZone: this.formattedTypeAttributes.timeZone,
-            timeZoneName: this.formattedTypeAttributes.timeZoneName
+            year: attrs.year || 'numeric',
+            month: attrs.month || 'numeric',
+            day: attrs.day || 'numeric',
+            weekday: attrs.weekday,
+            era: attrs.era,
+            timeZone: attrs.timeZone,
+            timeZoneName: attrs.timeZoneName
         };
     }
 
     get dateTimeFormatAttributes() {
-        return {
-            ...this.dateFormatAttributes,
-            hour: this.formattedTypeAttributes.hour || '2-digit',
-            minute: this.formattedTypeAttributes.minute || '2-digit',
-            second: this.formattedTypeAttributes.second,
-            hourCycle: this.formattedTypeAttributes.hourCycle
-        };
+        if (!this._dateTimeFormatAttributes) {
+            this._dateTimeFormatAttributes = {
+                ...this.dateFormatAttributes,
+                hour: this.formattedTypeAttributes.hour || '2-digit',
+                minute: this.formattedTypeAttributes.minute || '2-digit',
+                second: this.formattedTypeAttributes.second,
+                hourCycle: this.formattedTypeAttributes.hourCycle
+            };
+        }
+        return this._dateTimeFormatAttributes;
     }
 
     get urlTarget() {

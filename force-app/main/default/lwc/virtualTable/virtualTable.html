@@ -1,30 +1,66 @@
 <template>
     <div class="outer-container slds-theme_default">
-        <table class="header-table slds-table" role="table" aria-label={label}>
-            <thead>
-                <tr class="slds-line-height_reset">
-                    <template lwc:if={allowRowSelection}>
-                        <th scope="col">
-                            <lightning-input
-                                type="checkbox"
-                                checked={allRowsSelected}
-                                onclick={handleAllRowSelection}
-                            ></lightning-input>
-                        </th>
-                    </template>
-                    <template for:each={processedColumns} for:item="column">
-                        <th key={column.key} scope="col">
-                            <div class="slds-truncate" title={column.label}>{column.label}</div>
-                        </th>
-                    </template>
-                </tr>
-            </thead>
-        </table>
-        <div class="table-container" onscroll={handleScroll} role="region" aria-label="Scrollable Table" tabindex="0">
-            <div id="table-description" class="slds-assistive-text">{label}</div>
+        <div class="custom-header full-width">
+            <div
+                class="custom-header-cell slds-p-around_x-small"
+                data-columnkey="selectAll"
+                data-columnlabel="Select All"
+                lwc:if={allowRowSelection}
+            >
+                <lightning-input
+                    type="checkbox"
+                    checked={allRowsSelected}
+                    onclick={handleAllRowSelection}
+                ></lightning-input>
+            </div>
+            <template for:each={processedColumns} for:item="column">
+                <div
+                    class="custom-header-cell slds-p-around_x-small"
+                    data-columnkey={column.key}
+                    data-columnlabel={column.label}
+                    key={column.key}
+                >
+                    {column.label}
+                </div>
+            </template>
+        </div>
+        <div
+            class="table-container"
+            onscroll={handleScroll}
+            role="region"
+            aria-label="Scrollable Table"
+            tabindex="0"
+        >
             <div style={contentStyle}>
-                <div style={offsetStyle}>
-                    <table role="table" class="slds-table" aria-describedby="table-description">
+                <div style={offsetStyle} class="">
+                    <table class="slds-table" role="table" aria-label={label}>
+                        <thead>
+                            <tr>
+                                <template lwc:if={allowRowSelection}>
+                                    <th scope="col">
+                                        <div class="" title="Select All"></div>
+                                    </th>
+                                </template>
+                                <template
+                                    for:each={processedColumns}
+                                    for:item="column"
+                                >
+                                    <th
+                                        key={column.key}
+                                        scope="col"
+                                        data-columnkey={column.key}
+                                        data-columnlabel={column.label}
+                                    >
+                                        <div
+                                            class="slds-truncate"
+                                            title={column.label}
+                                        >
+                                            {column.label}
+                                        </div>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
                         <tbody>
                             <template for:each={visibleData} for:item="row">
                                 <tr
@@ -36,16 +72,25 @@
                                 >
                                     <template lwc:if={allowRowSelection}>
                                         <td>
-                                            <lightning-input
-                                                type="checkbox"
-                                                data-row={row.key}
-                                                checked={row.isSelected}
-                                                onclick={handleRowSelection}
-                                            ></lightning-input>
+                                            <div>
+                                                <lightning-input
+                                                    type="checkbox"
+                                                    data-row={row.key}
+                                                    checked={row.isSelected}
+                                                    onclick={handleRowSelection}
+                                                ></lightning-input>
+                                            </div>
                                         </td>
                                     </template>
-                                    <template for:each={row.flattenedColumns} for:item="column">
-                                        <td key={column.key} role="cell" class={column.cellClass}>
+                                    <template
+                                        for:each={row.flattenedColumns}
+                                        for:item="column"
+                                    >
+                                        <td
+                                            key={column.key}
+                                            scope="row"
+                                            class={column.cellClass}
+                                        >
                                             <c-virtual-table-cell
                                                 type={column.type}
                                                 value={column.value}
