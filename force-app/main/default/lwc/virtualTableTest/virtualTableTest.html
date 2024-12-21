@@ -13,7 +13,7 @@
                     ></lightning-button>
                 </lightning-layout-item>
                 <lightning-layout-item size="12">
-                    <template lwc:if={rowData.length}>
+                    <!-- <template lwc:if={rowData.length}> -->
                         <div style="height: 60vh">
                             <!-- NOTE : With Row Selections -->
                             <c-virtual-table
@@ -37,10 +37,10 @@
                                 label="Virtual Table"
                             ></c-virtual-table> -->
                         </div>
-                    </template>
-                    <template lwc:else>
+                    <!-- </template> -->
+                    <!-- <template lwc:else>
                         <div>No data found</div>
-                    </template>
+                    </template> -->
                 </lightning-layout-item>
             </lightning-layout>
         </template>

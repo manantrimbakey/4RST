@@ -7,30 +7,49 @@ export default class VirtualTableTest extends LightningElement {
     @track rowData = [];
     @track columns = [];
 
-    connectedCallback() {
-        this.generateRowData();
+    async connectedCallback() {
+        await this.generateRowData();
         this.generateColumns();
         this.isLoading = false;
     }
 
     generateRowData() {
-        let rowData = [];
-        // Generate 500000 sample rows with various data types
-        for (let i = 0; i < 50000; i++) {
-        // for (let i = 0; i < 500000; i++) {
-            rowData.push({
-                id: 'key' + i,
-                name: `Task ${i}`,
-                date: new Date(2024, 0, i + 1).toISOString(),
-                amount: Math.round(Math.random() * 10000) / 100,
-                status: Math.random() > 0.5 ? 'Active' : 'Inactive',
-                progress: Math.floor(Math.random() * 100),
-                url: `https://example.com/task/${i}`,
-                email: `user${i}@example.com`,
-                phone: `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`
-            });
-        }
-        this.rowData = rowData;
+        return new Promise((resolve) => {
+            const BATCH_SIZE = 1000;
+            const TOTAL_ROWS = 500000;
+            let rowData = [];
+            let currentIndex = 0;
+
+            const processNextBatch = () => {
+                const end = Math.min(currentIndex + BATCH_SIZE, TOTAL_ROWS);
+
+                for (let i = currentIndex; i < end; i++) {
+                    rowData.push({
+                        id: 'key' + i,
+                        name: `Task ${i}`,
+                        date: new Date(2024, 0, i + 1).toISOString(),
+                        amount: Math.round(Math.random() * 10000) / 100,
+                        status: Math.random() > 0.5 ? 'Active' : 'Inactive',
+                        progress: Math.floor(Math.random() * 100),
+                        url: `https://example.com/task/${i}`,
+                        email: `user${i}@example.com`,
+                        phone: `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`
+                    });
+                }
+
+                currentIndex = end;
+
+                if (currentIndex < TOTAL_ROWS) {
+                    // eslint-disable-next-line @lwc/lwc/no-async-operation
+                    setTimeout(processNextBatch, 0);
+                } else {
+                    this.rowData = rowData;
+                    resolve();
+                }
+            };
+
+            processNextBatch();
+        });
     }
 
     generateColumns() {
